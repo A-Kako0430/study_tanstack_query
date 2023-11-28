@@ -27,22 +27,30 @@ export default function InputArea() {
   // MessageをPOSTし、キャッシュを更新
   const mutation = useMutation({
     mutationFn: tables.messages.create,
+    retry: 3,
     onMutate: (message) => {
       // 更新関数実行前の処理
+      // 基本成功するという前提で、見た目上だけ先に反映させたい場合、
+      // onMutateで先に反映し、onSuccessで正しいデータに直すoronErrorで巻き戻すといった運用も可能
       console.log(`Mutate:${message.content}`);
+      return 'Mutateでリターン';
     },
     onError: (error, message, context) => {
       // エラー発生時の処理
-      console.log(`onError:error:${error}、message:${message.content}、context:${context}`);
+      console.log(`onError:error:${error.message}、message:${message.content}、context:${context}`);
     },
-    onSuccess: () => {
+    onSuccess: (data, message, context) => {
       // 成功時の処理
+      console.log(`onSuccess:data:${data.status}、message:${message.content}、context:${context}`);
       queryClient.invalidateQueries({
         queryKey: ['messagesOnRoom', selectedRoom]});
     },
     onSettled: (data, error, message, context) => {
       // 成功・エラー問わず実行する後処理
-      console.log(`onError:data:${data}、error:${error}、message:${message.content}、context:${context}`);
+      // data: 更新関数が返すデータ
+      // error: エラー情報
+      // context: onMutate で return したもの
+      console.log(`onSettled:data:${data?.status}、error:${error?.message}、message:${message.content}、context:${context}`);
     }
   });
 
@@ -57,6 +65,20 @@ export default function InputArea() {
         userId: loginUser,
         roomId: selectedRoom,
         content: inputText
+      }, {
+        // useMutation側より後に実行される
+        onError: (error, message, context) => {
+          // エラー発生時の処理
+          console.log(`mutate:onError:error:${error.message}、message:${message.content}、context:${context}`);
+        },
+        onSuccess: (data, message, context) => {
+          // 成功時の処理
+          console.log(`mutate:onSuccess:data:${data.status}、message:${message.content}、context:${context}`);
+        },
+        onSettled: (data, error, message, context) => {
+          // 成功・エラー問わず実行する後処理
+          console.log(`mutate:onSettled:data:${data?.status}、error:${error?.message}、message:${message.content}、context:${context}`);
+        }
       });
       // 送信後、入力欄を空欄にする
       setInputText('');
