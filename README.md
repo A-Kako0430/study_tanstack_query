@@ -11,7 +11,7 @@
 
 ## CHAT
 - /components/chat
-- https://qiita.com/uehaj/items/4e41e294181b3771e77a を参考に実装
+- https://qiita.com/uehaj/items/4e41e294181b3771e77a を参考に実装し、公式GUIDEなどを参照して拡張
 - 学習内容
     - 複数のコンポーネントが関係し合う、TODOよりも複雑な実装で、useQuery・useMutationの使い方に慣れる
         - staleTime等のいくつかのオプションの確認
