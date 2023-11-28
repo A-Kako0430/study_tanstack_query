@@ -42,11 +42,11 @@ export default function RoomList() {
   return (
     <>
       <Typography>閲覧するルームを選択してください:</Typography>
-      <ul>
+      <ul className={classes.ul}>
         {rooms?.map((room) => (
           <li key={room.roomId}
             onClick={() => handleClick(room.roomId)}
-            className={room.roomId === selectedRoom ? classes.selected : ''}
+            className={room.roomId === selectedRoom ? classes.selected : classes.normal}
           >
             <span>{`${room.roomId}:${room.name}`}</span>
           </li>
