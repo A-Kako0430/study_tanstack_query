@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import classes from "./MessageArea.module.scss";
 import { Message, User } from "@/types/fetchData";
 import { tables } from "@/api/fetchData";
-import { ITextMessageProps, MessageList, MessageType } from "react-chat-elements";
+import { MessageList, MessageType } from "react-chat-elements";
 
 export default function MessageArea() {
   // マウント時：何もしない
@@ -59,7 +59,11 @@ export default function MessageArea() {
   } = useQuery<Message[]>({
     queryKey: ['messagesOnRoom', selectedRoom],
     queryFn: tables.messages.fetchTable,
-    select: (mes) => mes.filter((mes) => mes.roomId === selectedRoom)
+    select: (mes) => mes.filter((mes) => mes.roomId === selectedRoom),
+    staleTime: Infinity,  // キャッシュの有効期限。default：0。この期限が切れ、データ再取得すると、再fetchが走る
+    gcTime: 1 * 60 * 1000, // 非アクティブなクエリがキャッシュから削除されるまでの期間。default：5分。
+    refetchInterval: 1 * 60 * 1000, // 自動更新間隔。default: false。
+    refetchOnWindowFocus: false//  window にフォーカスがあたった時にデータの再取得をするかどうか
   });
 
   // ・フィルタで選択されているUserIdのMessageのみ表示

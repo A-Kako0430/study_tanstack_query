@@ -1,0 +1,18 @@
+.ul {
+  padding-left: 0.5em;
+  list-style: none;
+}
+
+.normal,
+.selected {
+  padding: 0.5em 0.5em;
+}
+
+.normal {
+  cursor: pointer;
+}
+
+.selected {
+  background-color: #ffcc33;
+  color: #880000;
+}

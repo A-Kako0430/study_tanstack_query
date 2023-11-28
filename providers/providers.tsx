@@ -12,7 +12,7 @@ export function Providers(props: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ReactQueryStreamedHydration>
         {props.children}
-        <ReactQueryDevtools initialIsOpen={true} />
+        <ReactQueryDevtools initialIsOpen={true} buttonPosition={"bottom-left"} />
       </ReactQueryStreamedHydration>
     </QueryClientProvider>
   )
