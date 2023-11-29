@@ -42,6 +42,7 @@ export default function InputArea() {
     onSuccess: (data, message, context) => {
       // 成功時の処理
       console.log(`onSuccess:data:${data.status}、message:${message.content}、context:${context}`);
+      // 指定したqueryKeyに紐づくクエリが無効になったことを明示し、自動再フェッチを走らせる
       queryClient.invalidateQueries({
         queryKey: ['messagesOnRoom', selectedRoom]});
     },
