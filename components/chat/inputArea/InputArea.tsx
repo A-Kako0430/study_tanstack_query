@@ -2,6 +2,7 @@ import { Input, Button } from 'react-chat-elements';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { tables } from '@/api/fetchData';
 import { createRef, useState } from 'react';
+import { Message } from '@/types/fetchData';
 
 export default function InputArea() {
   // 「送信」ボタン押下でServerにMessageをPOSTし、キャッシュを更新する。
@@ -30,10 +31,20 @@ export default function InputArea() {
     retry: 3,
     onMutate: (message) => {
       // 更新関数実行前の処理
-      // 基本成功するという前提で、見た目上だけ先に反映させたい場合、
-      // onMutateで先に反映し、onSuccessで正しいデータに直すoronErrorで巻き戻すといった運用も可能
       console.log(`Mutate:${message.content}`);
-      return 'Mutateでリターン';
+
+      // Optimistic Update
+      // 基本成功するという前提で、見た目上だけ先に反映させたい場合、
+      // onMutateで先に反映し、onSuccessで正しいデータに直すoronErrorで巻き戻すといった運用も可能。
+      //  ↓
+      // 古いデータで上書きされないよう、クエリをキャンセルする
+      queryClient.cancelQueries({ queryKey: ['messagesOnRoom', selectedRoom]});
+      // キャッシュから更新前のデータのスナップショットを取得
+      const previousMessagesOnRoom = queryClient.getQueryData(['messagesOnRoom', selectedRoom]);
+      // 新しいデータでキャッシュを更新する
+      queryClient.setQueryData(['messagesOnRoom', selectedRoom], message);
+      // スナップショットからContextのオブジェクトを返す。（onError、onSuccess、onSettledでロールバックなどに使用できる）
+      return { previousMessagesOnRoom };
     },
     onError: (error, message, context) => {
       // エラー発生時の処理

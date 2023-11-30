@@ -1,8 +1,10 @@
 import { tables } from "@/api/fetchData";
 import { Message, User } from "@/types/fetchData";
 import { Typography } from "@mui/material";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import classes from "./UserList.module.scss";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 export default function UserList() {
   // 選択中のRoomで発言しているUserのみを一覧に表示する
@@ -25,7 +27,9 @@ export default function UserList() {
   const {
     data: messagesOnRoom,
     error: messagesOnRoomError
-  } = useQuery<Message[]>({
+  // } = useQuery<Message[]>({
+  // Suspenseモードを有効にする
+  } = useSuspenseQuery<Message[]>({
     queryKey: ['messagesOnRoom', selectedRoom],
     queryFn: tables.messages.fetchTable,
     select: (mes) => mes.filter((mes) => mes.roomId == selectedRoom),
@@ -54,9 +58,10 @@ export default function UserList() {
     queryClient.setQueryData<number>(['filterdUser'], filterdUser);
   }
 
-  if (usersError) {
-    return <div>Usersが読み込めませんでした: {usersError.message}</div>;
-  }
+  // Suspence使ってるのでisLoding、isErrorは不要に。
+  // if (usersError) {
+  //   return <div>Usersが読み込めませんでした: {usersError.message}</div>;
+  // }
 
   if (messagesOnRoomError) {
     return <div>Messagesが読み込めませんでした: {messagesOnRoomError.message}</div>;
@@ -76,15 +81,19 @@ export default function UserList() {
     <>
       <Typography>発言者でフィルタ:</Typography>
       <ul className={classes.ul}>
-        {usersOnRoom?.map((user) => (
-          <li
-            key={user.userId}
-            onClick={() => handleClick(user.userId)}
-            className={user.userId === filterdUser ? classes.selected : classes.normal}
-          >
-            {user.name}
-          </li>
-        ))}
+        <ErrorBoundary FallbackComponent={() => <li>エラー</li>}>
+          <Suspense fallback={<li>ローディング中</li>}>
+            {usersOnRoom?.map((user) => (
+              <li
+                key={user.userId}
+                onClick={() => handleClick(user.userId)}
+                className={user.userId === filterdUser ? classes.selected : classes.normal}
+              >
+                {user.name}
+              </li>
+            ))}
+          </Suspense>
+        </ErrorBoundary>
         <li onClick={() => handleClick(0)} className={classes.normal}>
           フィルタクリア
         </li>
@@ -92,3 +101,4 @@ export default function UserList() {
     </>
   )
 }
+
